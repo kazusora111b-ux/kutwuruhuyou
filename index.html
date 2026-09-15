@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoC キャラクター保管庫</title>
+    <link rel="stylesheet" href="a.css">
+</head>
+<body>
+    <main class="app-shell">
+        <header class="topbar">
+            <div><p class="eyebrow">CALL OF CTHULHU / CHARACTER ARCHIVE</p><h1>キャラクター保管庫</h1></div>
+            <div class="storage-state"><span class="state-dot"></span>この端末に保存</div>
+        </header>
+        <section class="identity-panel">
+            <label for="playerId">プレイヤーID</label>
+            <div class="identity-row"><input id="playerId" type="text" placeholder="例：player-001" maxlength="40" autocomplete="off"><button id="loadPlayer" class="button button-primary" type="button">IDを読み込む</button></div>
+            <p class="helper">IDごとにキャラクターを最大3体まで保存できます。データはこのブラウザ内に保存されます。</p>
+        </section>
+        <div id="notice" class="notice" role="status" aria-live="polite"></div>
+        <section class="workspace">
+            <aside class="slot-panel"><div class="section-heading"><div><p class="eyebrow">SAVED SLOTS</p><h2>キャラクター</h2></div><span id="slotCount" class="count-label">0 / 3</span></div><div id="characterSlots" class="character-slots"></div></aside>
+            <section class="editor-panel">
+                <form id="characterForm">
+                    <div class="editor-heading"><div><p class="eyebrow">CHARACTER SHEET</p><h2 id="editorTitle">新しいキャラクター</h2></div><span id="editState" class="edit-state">未保存</span></div>
+                    <div class="profile-grid">
+                        <div class="portrait-column"><div id="portraitPreview" class="portrait-preview"><span>立ち絵<br>プレビュー</span></div><label class="file-button button button-secondary" for="portrait">画像を選択</label><input id="portrait" type="file" accept="image/png,image/jpeg,image/webp,image/gif"><button id="removePortrait" class="text-button" type="button">画像を外す</button></div>
+                        <div class="details-column"><div class="field-grid two-col"><label>探索者名<input name="name" required maxlength="50" placeholder="探索者の名前"></label><label>職業<input name="job" maxlength="50" placeholder="私立探偵"></label><label>年齢<input name="age" type="number" min="0" max="999" placeholder="28"></label><label>性別<input name="gender" maxlength="30" placeholder="任意"></label></div><label>プロフィール・メモ<textarea name="memo" rows="4" placeholder="人物メモ、背景、所持品など"></textarea></label></div>
+                    </div>
+                    <div class="form-section"><div class="subheading"><h3>能力値</h3><span>CoC 6版 / 任意入力</span></div><div class="stat-grid">
+                        <label><abbr title="筋力">STR</abbr><input name="STR" type="number" min="0" max="999"></label><label><abbr title="体力">CON</abbr><input name="CON" type="number" min="0" max="999"></label><label><abbr title="サイズ">SIZ</abbr><input name="SIZ" type="number" min="0" max="999"></label><label><abbr title="敏捷性">DEX</abbr><input name="DEX" type="number" min="0" max="999"></label><label><abbr title="外見">APP</abbr><input name="APP" type="number" min="0" max="999"></label><label><abbr title="知識">INT</abbr><input name="INT" type="number" min="0" max="999"></label><label><abbr title="精神力">POW</abbr><input name="POW" type="number" min="0" max="999"></label><label><abbr title="教育">EDU</abbr><input name="EDU" type="number" min="0" max="999"></label><label class="highlight-stat"><abbr title="耐久力">HP</abbr><input name="HP" type="number" min="0" max="999"></label><label class="highlight-stat"><abbr title="正気度">SAN</abbr><input name="SAN" type="number" min="0" max="999"></label><label><abbr title="幸運">幸運</abbr><input name="luck" type="number" min="0" max="999"></label><label><abbr title="ダメージボーナス">DB</abbr><input name="DB" maxlength="20" placeholder="0"></label>
+                    </div></div>
+                    <div class="form-section"><div class="subheading"><h3>技能</h3><span>技能名と値を自由に追加</span></div><div id="skillsList" class="skills-list"></div><button id="addSkill" class="button button-ghost" type="button">＋ 技能を追加</button></div>
+                    <div class="form-actions"><button id="deleteCharacter" class="button button-danger" type="button">このキャラクターを削除</button><button class="button button-primary button-save" type="submit">キャラクターを保存</button></div>
+                </form>
+            </section>
+        </section>
+        <section class="dice-panel">
+            <div class="section-heading"><div><p class="eyebrow">DICE ROLLER</p><h2>ダイスロール</h2></div><span class="count-label">履歴はこの画面内のみ</span></div>
+            <div class="dice-controls">
+                <label for="diceNotation">ダイス式<input id="diceNotation" type="text" value="1d100" inputmode="text" maxlength="20" aria-describedby="diceHelp"></label>
+                <button id="rollDice" class="button button-primary" type="button">振る</button>
+            </div>
+            <p id="diceHelp" class="helper">例：1d100 / 3d6+2 / d20-1　最大20個まで振れます。</p>
+            <div class="quick-dice" aria-label="クイックダイス"><button type="button" data-dice="1d100">D100</button><button type="button" data-dice="1d20">D20</button><button type="button" data-dice="1d10">D10</button><button type="button" data-dice="1d6">D6</button><button type="button" data-dice="1d4">D4</button></div>
+            <div id="diceResult" class="dice-result" aria-live="polite"><span>ダイス式を入力して「振る」を押してください。</span></div>
+            <div id="diceHistory" class="dice-history"></div>
+            <div class="skill-check-panel">
+                <div class="subheading"><h3>技能判定</h3><span>CoC 6版 / 1D100</span></div>
+                <div class="skill-check-controls"><label for="skillCheckSelect">判定する技能<select id="skillCheckSelect"><option value="">技能を選択してください</option></select></label><button id="skillCheckButton" class="button button-primary" type="button">技能判定</button></div>
+                <div class="san-loss-controls"><label for="sanLossSuccess">成功時のSAN減少<input id="sanLossSuccess" type="number" min="0" max="100" value="0"></label><label for="sanLossFailure">失敗時のSAN減少<input id="sanLossFailure" type="number" min="0" max="100" value="0"></label></div>
+                <p class="helper">01〜05はクリティカル、96〜00はファンブル、それ以外は技能値以下で成功です。</p>
+                <div id="skillCheckResult" class="skill-check-result" aria-live="polite"><span>技能を登録してから判定できます。</span></div>
+                <div id="sanSpecialControls" class="san-special-controls" hidden><label id="sanSpecialLabel" for="sanSpecialLoss">今回のSAN減少値<input id="sanSpecialLoss" type="number" min="0" max="100" value="0"></label><button id="applySanSpecial" class="button button-primary" type="button">SANに反映</button></div>
+            </div>
+            <div class="stat-check-panel">
+                <div class="subheading"><h3>能力値判定</h3><span>能力値 × 倍率を目標値にして1D100</span></div>
+                <div class="stat-check-controls"><label for="statCheckSelect">判定する能力値<select id="statCheckSelect"><option value="">能力値を選択してください</option></select></label><label for="statMultiplier">倍率<input id="statMultiplier" type="number" min="1" max="10" value="1"></label><button id="statCheckButton" class="button button-primary" type="button">能力値判定</button></div>
+                <p class="helper">等倍なら1、STR×5なら5を入力してください。HP・SAN・DBは能力値判定の対象外です。</p>
+                <div id="statCheckResult" class="skill-check-result" aria-live="polite"><span>キャラクターを読み込むと能力値を選択できます。</span></div>
+            </div>
+        </section>
+    </main>
+    <script>
+        const STORAGE_KEY = 'coc-character-archive-v1';
+        const state = { players: JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'), playerId: '', selectedSlot: null, portrait: '', skills: [] };
+        const $ = (selector) => document.querySelector(selector); const form = $('#characterForm');
+        function showNotice(message, type = 'success') { const notice = $('#notice'); notice.textContent = message; notice.className = 'notice ' + type; window.clearTimeout(showNotice.timer); showNotice.timer = window.setTimeout(() => { notice.className = 'notice'; }, 3200); }
+        function persist() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.players)); }
+        function currentCharacters() { return state.players[state.playerId] || []; }
+        function setValue(name, value = '') { const input = form.elements[name]; if (input) input.value = value; }
+        function blankForm() { form.reset(); state.portrait = ''; state.skills = []; $('#sanLossSuccess').value = 0; $('#sanLossFailure').value = 0; $('#sanSpecialControls').hidden = true; $('#skillCheckResult').className = 'skill-check-result'; $('#skillCheckResult').innerHTML = '<span>技能を登録してから判定できます。</span>'; $('#statCheckResult').className = 'skill-check-result'; $('#statCheckResult').innerHTML = '<span>キャラクターを読み込むと能力値を選択できます。</span>'; $('#statMultiplier').value = 1; $('#portraitPreview').innerHTML = '<span>立ち絵<br>プレビュー</span>'; $('#editorTitle').textContent = '新しいキャラクター'; $('#editState').textContent = '未保存'; renderSkills(); renderStatCheckOptions(); }
+        function escapeHtml(value) { return String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char])); }
+        function renderSlots() { const characters = currentCharacters(); $('#slotCount').textContent = characters.length + ' / 3'; $('#characterSlots').innerHTML = ''; for (let index = 0; index < 3; index += 1) { const character = characters[index]; const slot = document.createElement('button'); slot.type = 'button'; slot.className = 'character-slot' + (state.selectedSlot === index ? ' active' : ''); slot.innerHTML = character ? '<span class="slot-number">0' + (index + 1) + '</span><span class="slot-avatar">' + (character.portrait ? '<img src="' + character.portrait + '" alt="">' : '◇') + '</span><span class="slot-info"><strong>' + escapeHtml(character.name || '無名の探索者') + '</strong><small>' + escapeHtml(character.job || '職業未設定') + '</small></span>' : '<span class="slot-number">0' + (index + 1) + '</span><span class="slot-avatar empty">＋</span><span class="slot-info"><strong>空きスロット</strong><small>新規作成</small></span>'; slot.addEventListener('click', () => selectSlot(index)); $('#characterSlots').appendChild(slot); } }
+        function selectSlot(index) { const characters = currentCharacters(); state.selectedSlot = index; if (characters[index]) loadCharacter(characters[index]); else blankForm(); renderSlots(); }
+        function loadCharacter(character) { blankForm(); Object.entries(character).forEach(([key, value]) => { if (!['portrait', 'skills', 'sanLossSuccess', 'sanLossFailure', 'sanLossCritical', 'sanLossFumble'].includes(key)) setValue(key, value); }); state.portrait = character.portrait || ''; state.skills = character.skills || []; $('#sanLossSuccess').value = character.sanLossSuccess || 0; $('#sanLossFailure').value = character.sanLossFailure || 0; if (state.portrait) $('#portraitPreview').innerHTML = '<img src="' + state.portrait + '" alt="立ち絵プレビュー">'; $('#editorTitle').textContent = character.name || '無名の探索者'; $('#editState').textContent = '保存済み'; renderSkills(); renderStatCheckOptions(); }
+        function renderSkills() { $('#skillsList').innerHTML = ''; state.skills.forEach((skill, index) => { const row = document.createElement('div'); row.className = 'skill-row'; row.innerHTML = '<input class="skill-name" data-index="' + index + '" value="' + escapeHtml(skill.name) + '" placeholder="技能名"><input class="skill-value" data-index="' + index + '" type="number" min="0" max="999" value="' + escapeHtml(skill.value) + '" placeholder="%"><button type="button" class="remove-skill" data-index="' + index + '" aria-label="技能を削除">×</button>'; row.querySelector('.skill-name').addEventListener('input', (event) => { state.skills[index].name = event.target.value; renderSkillCheckOptions(); }); row.querySelector('.skill-value').addEventListener('input', (event) => { state.skills[index].value = event.target.value; renderSkillCheckOptions(); }); row.querySelector('.remove-skill').addEventListener('click', () => { state.skills.splice(index, 1); renderSkills(); }); $('#skillsList').appendChild(row); }); renderSkillCheckOptions(); }
+        function renderSkillCheckOptions() { const select = $('#skillCheckSelect'); const selectedValue = select.value; select.innerHTML = '<option value="">技能を選択してください</option>'; state.skills.forEach((skill, index) => { if (skill.name.trim()) { const option = document.createElement('option'); option.value = String(index); option.textContent = skill.name + ' (' + (skill.value || 0) + '%)'; select.appendChild(option); } }); const sanValue = form.elements.SAN.value; if (sanValue !== '') { const sanOption = document.createElement('option'); sanOption.value = 'san'; sanOption.textContent = 'SAN値 (' + sanValue + '%)'; select.appendChild(sanOption); } if ([...select.options].some((option) => option.value === selectedValue)) select.value = selectedValue; }
+        function renderStatCheckOptions() { const select = $('#statCheckSelect'); const selectedValue = select.value; const statNames = { STR: 'STR', CON: 'CON', SIZ: 'SIZ', DEX: 'DEX', APP: 'APP', INT: 'INT', POW: 'POW', EDU: 'EDU', luck: '幸運' }; select.innerHTML = '<option value="">能力値を選択してください</option>'; Object.entries(statNames).forEach(([name, label]) => { const value = form.elements[name].value; if (value !== '') { const option = document.createElement('option'); option.value = name; option.textContent = label + ' (' + value + ')'; select.appendChild(option); } }); if ([...select.options].some((option) => option.value === selectedValue)) select.value = selectedValue; }
+        $('#loadPlayer').addEventListener('click', () => { const id = $('#playerId').value.trim(); if (!id) { showNotice('プレイヤーIDを入力してください。', 'error'); return; } state.playerId = id; state.selectedSlot = null; if (!state.players[id]) state.players[id] = []; persist(); renderSlots(); blankForm(); showNotice(id + ' のデータを読み込みました。'); });
+        $('#portrait').addEventListener('change', (event) => { const file = event.target.files[0]; if (!file) return; if (file.size > 5 * 1024 * 1024) { showNotice('画像は5MB以下にしてください。', 'error'); event.target.value = ''; return; } const reader = new FileReader(); reader.onload = () => { state.portrait = reader.result; $('#portraitPreview').innerHTML = '<img src="' + state.portrait + '" alt="立ち絵プレビュー">'; }; reader.readAsDataURL(file); });
+        $('#removePortrait').addEventListener('click', () => { state.portrait = ''; $('#portrait').value = ''; $('#portraitPreview').innerHTML = '<span>立ち絵<br>プレビュー</span>'; });
+        $('#addSkill').addEventListener('click', () => { state.skills.push({ name: '', value: '' }); renderSkills(); });
+        form.elements.SAN.addEventListener('input', renderSkillCheckOptions);
+        ['STR', 'CON', 'SIZ', 'DEX', 'APP', 'INT', 'POW', 'EDU', 'luck'].forEach((name) => form.elements[name].addEventListener('input', renderStatCheckOptions));
+        function rollDice(notation) {
+            const match = notation.trim().toLowerCase().match(/^(\d*)d(\d+)([+-]\d+)?$/);
+            if (!match) throw new Error('ダイス式は 1d100 や 3d6+2 の形式で入力してください。');
+            const count = Number(match[1] || 1); const sides = Number(match[2]); const modifier = Number(match[3] || 0);
+            if (count < 1 || count > 20 || sides < 2 || sides > 1000) throw new Error('個数は1〜20個、面数は2〜1000面で指定してください。');
+            const rolls = Array.from({ length: count }, () => Math.floor(Math.random() * sides) + 1);
+            return { notation: notation.trim().toLowerCase(), rolls, modifier, total: rolls.reduce((sum, value) => sum + value, modifier) };
+        }
+        function displayRoll(result) {
+            const modifierText = result.modifier ? (result.modifier > 0 ? ' + ' + result.modifier : ' - ' + Math.abs(result.modifier)) : '';
+            $('#diceResult').innerHTML = '<div class="result-total"><small>' + escapeHtml(result.notation) + '</small><strong>' + result.total + '</strong></div><div class="result-rolls">出目：' + result.rolls.map((value) => '<b>' + value + '</b>').join(' ') + (modifierText ? '<span>' + modifierText + '</span>' : '') + '</div>';
+            const historyItem = document.createElement('div'); historyItem.className = 'history-item'; historyItem.innerHTML = '<span>' + escapeHtml(result.notation) + '</span><span>' + result.rolls.join(', ') + (modifierText || '') + '</span><strong>' + result.total + '</strong>'; $('#diceHistory').prepend(historyItem);
+            while ($('#diceHistory').children.length > 8) $('#diceHistory').lastElementChild.remove();
+        }
+        function executeRoll(notation) { try { displayRoll(rollDice(notation)); } catch (error) { $('#diceResult').innerHTML = '<span class="dice-error">' + escapeHtml(error.message) + '</span>'; } }
+        $('#rollDice').addEventListener('click', () => executeRoll($('#diceNotation').value));
+        $('#diceNotation').addEventListener('keydown', (event) => { if (event.key === 'Enter') executeRoll(event.target.value); });
+        document.querySelectorAll('[data-dice]').forEach((button) => button.addEventListener('click', () => { $('#diceNotation').value = button.dataset.dice; executeRoll(button.dataset.dice); }));
+        function applySanLoss(loss) { const currentSan = Number(form.elements.SAN.value) || 0; const nextSan = Math.max(0, currentSan - loss); form.elements.SAN.value = nextSan; renderSkillCheckOptions(); if (state.playerId && state.selectedSlot !== null && currentCharacters()[state.selectedSlot]) { const character = currentCharacters()[state.selectedSlot]; character.SAN = String(nextSan); character.sanLossSuccess = $('#sanLossSuccess').value; character.sanLossFailure = $('#sanLossFailure').value; persist(); } return nextSan; }
+        $('#skillCheckButton').addEventListener('click', () => { const selected = $('#skillCheckSelect').value; if (selected === '') { $('#skillCheckResult').innerHTML = '<span class="dice-error">判定する技能を選択してください。</span>'; return; } const isSan = selected === 'san'; const skill = isSan ? { name: 'SAN値', value: form.elements.SAN.value } : state.skills[Number(selected)]; const target = Number(skill.value); if (!skill.name.trim() || !Number.isFinite(target) || target < 0 || target > 100) { $('#skillCheckResult').innerHTML = '<span class="dice-error">技能値を0〜100の範囲で入力してください。</span>'; return; } const roll = Math.floor(Math.random() * 100) + 1; const outcome = roll <= 5 ? 'critical' : roll >= 96 ? 'fumble' : roll <= target ? 'success' : 'failure'; const labels = { critical: 'クリティカル成功', success: '成功', failure: '失敗', fumble: 'ファンブル' }; let lossText = ''; $('#sanSpecialControls').hidden = true; if (isSan) { if (outcome === 'critical' || outcome === 'fumble') { $('#sanSpecialLabel').firstChild.textContent = outcome === 'critical' ? 'クリティカル時のSAN減少値' : 'ファンブル時のSAN減少値'; $('#sanSpecialLoss').value = 0; $('#sanSpecialControls').hidden = false; } else { const loss = Number($('#' + (outcome === 'failure' ? 'sanLossFailure' : 'sanLossSuccess')).value) || 0; applySanLoss(loss); lossText = loss ? '（SAN -' + loss + '）' : ''; } } $('#skillCheckResult').className = 'skill-check-result ' + outcome; $('#skillCheckResult').innerHTML = '<span class="check-skill-name">' + escapeHtml(skill.name) + '（目標値 ' + target + '%）' + lossText + '</span><strong>' + roll + '</strong><b>' + labels[outcome] + '</b>'; });
+        $('#applySanSpecial').addEventListener('click', () => { const loss = Number($('#sanSpecialLoss').value); if (!Number.isFinite(loss) || loss < 0 || loss > 100) { $('#sanSpecialLoss').focus(); return; } const nextSan = applySanLoss(loss); $('#skillCheckResult').querySelector('.check-skill-name').textContent += '（SAN -' + loss + ' / 残り ' + nextSan + '）'; $('#sanSpecialControls').hidden = true; });
+        $('#statCheckButton').addEventListener('click', () => { const selected = $('#statCheckSelect').value; const multiplier = Number($('#statMultiplier').value); if (selected === '') { $('#statCheckResult').innerHTML = '<span class="dice-error">判定する能力値を選択してください。</span>'; return; } if (!Number.isInteger(multiplier) || multiplier < 1 || multiplier > 10) { $('#statCheckResult').innerHTML = '<span class="dice-error">倍率は1〜10の整数で入力してください。</span>'; return; } const baseValue = Number(form.elements[selected].value); if (!Number.isFinite(baseValue)) { $('#statCheckResult').innerHTML = '<span class="dice-error">能力値を入力してください。</span>'; return; } const target = baseValue * multiplier; const roll = Math.floor(Math.random() * 100) + 1; const outcome = roll <= 5 ? 'critical' : roll >= 96 ? 'fumble' : roll <= target ? 'success' : 'failure'; const labels = { critical: 'クリティカル成功', success: '成功', failure: '失敗', fumble: 'ファンブル' }; const label = $('#statCheckSelect').selectedOptions[0].textContent.split(' (')[0]; $('#statCheckResult').className = 'skill-check-result ' + outcome; $('#statCheckResult').innerHTML = '<span class="check-skill-name">' + escapeHtml(label) + '（' + baseValue + ' × ' + multiplier + ' = 目標値 ' + target + '%）</span><strong>' + roll + '</strong><b>' + labels[outcome] + '</b>'; });
+        form.addEventListener('submit', (event) => { event.preventDefault(); if (!state.playerId) { showNotice('先にプレイヤーIDを読み込んでください。', 'error'); return; } const characters = currentCharacters(); const data = Object.fromEntries(new FormData(form).entries()); data.age = data.age ? Number(data.age) : ''; data.portrait = state.portrait; data.skills = state.skills.filter((skill) => skill.name.trim()); data.sanLossSuccess = $('#sanLossSuccess').value; data.sanLossFailure = $('#sanLossFailure').value; if (state.selectedSlot === null) state.selectedSlot = characters.findIndex((character) => !character); if (state.selectedSlot === -1 || state.selectedSlot === null) { showNotice('保存できる空きスロットがありません。', 'error'); return; } characters[state.selectedSlot] = data; state.players[state.playerId] = characters; persist(); $('#editState').textContent = '保存済み'; $('#editorTitle').textContent = data.name; renderSlots(); showNotice('キャラクターを保存しました。'); });
+        $('#deleteCharacter').addEventListener('click', () => { if (!state.playerId || state.selectedSlot === null || !currentCharacters()[state.selectedSlot]) { showNotice('削除するキャラクターを選択してください。', 'error'); return; } if (!window.confirm('このキャラクターを削除しますか？')) return; currentCharacters().splice(state.selectedSlot, 1); state.selectedSlot = null; persist(); renderSlots(); blankForm(); showNotice('キャラクターを削除しました。'); });
+        renderSlots(); blankForm();
+    </script>
+</body>
+</html>
+
+
